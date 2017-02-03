@@ -1,0 +1,34 @@
+{
+  "name": "labelserver",
+  "version": "2.1.0",
+  "private": true,
+  "main": "main",
+  "scripts": {
+    "start": "node --harmony ./bin/www",
+    "build": "electron-packager ./ Mikuru --platform=all --out=../Mikuru --electron-version=1.4.13 --overwrite --icon=./public/ico/Mikuru.ico",
+    "build-linux": "electron-packager ./ Mikuru --platform=linux --out=../Mikuru --electron-version=1.4.13 --overwrite --icon=./public/ico/Mikuru.ico",
+    "build-macos": "electron-packager ./ Mikuru --platform=darwin --out=../Mikuru --electron-version=1.4.13 --overwrite --icon=./public/ico/Mikuru.icns",
+    "build-appstore": "electron-packager ./ Mikuru --platform=mas --out=../Mikuru --electron-version=1.4.13 --overwrite --icon=./public/ico/Mikuru.icns",
+    "build-win": "electron-packager ./ Mikuru --platform=win32 --out=../Mikuru --electron-version=1.4.13 --overwrite --icon=./public/ico/Mikuru.ico",
+    "watch": "babel lib/ -d src/"
+  },
+  "dependencies": {
+    "Promise": "^1.0.5",
+    "body-parser": "~1.15.2",
+    "cookie-parser": "~1.4.3",
+    "csv": "^1.1.0",
+    "debug": "~2.2.0",
+    "express": "~4.14.0",
+    "jade": "~1.11.0",
+    "mongodb": "^2.2.14",
+    "morgan": "~1.7.0",
+    "multiparty": "^4.1.2",
+    "mysql": "^2.12.0",
+    "promise": "^7.1.1",
+    "serve-favicon": "~2.3.0",
+    "unzip": "^0.1.11"
+  },
+  "devDependencies": {
+    "babel-preset-env": "^1.1.8"
+  }
+}
