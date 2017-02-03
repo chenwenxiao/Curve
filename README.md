@@ -1,6 +1,6 @@
 # Mikuru2 Label-Tool
 
-![Mikuru2](https://git.peidan.me/cwx17/mikuru2/raw/master/LabelServer/public/ico/Mikuru.ico)
+![Mikuru2](https://github.com/chenwenxiao/mikuru2/raw/master/LabelServer/public/ico/Mikuru.ico)
 
 Mikuru2 is a fully new label-tool for data labeling. It is from the opprentice tool https://git.peidan.me/cwx17/opprentice.
 
@@ -9,7 +9,7 @@ Now Mikuru2 support for mysql, mongodb or even you have no sql.
 # Release
 
 Release is for the offline and simple work, it will store data in memory, but its advantage is you don't need any knowledge about nodejs or sql. 
-The release is in [release link](https://git.peidan.me/cwx17/mikuru2/tree/master/Mikuru), you could download the applicatoin of your OS.
+The release is in [release link](https://github.com/chenwenxiao/mikuru2/releases), you could download the applicatoin of your OS.
 
 # Develop
 
