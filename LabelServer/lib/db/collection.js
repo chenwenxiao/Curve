@@ -6,7 +6,7 @@
 /**
  * The abstract class `Collection` for hide the operate of multiple databases'
  * collection or table's API, i.e, mongodb, mysql or the binary sql for the
- * release desktop version Mikuru.
+ * release desktop version Curve.
  * @abstract
  */
 class Collection {

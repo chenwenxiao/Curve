@@ -7,11 +7,11 @@ module.exports = {
   //mg_path: "mongodb://localhost:27017/opprentice",
   /*mysql_option: {
     connectionLimit: 10,
-    host: 'localhost',
-    user: 'root',
-    password: '2241456',
-    database: 'opprentice'
+    host: 'MYSQL_SERVER_IP',
+    user: 'MYSQL_USER_NAME',
+    password: 'MYSQL_USER_PASSWARD',
+    database: 'MYSQL_DATABASE'
   },*/
-  multiple: 60000,
-  babel: true
+  multiple: 1,
+  babel: false
 };

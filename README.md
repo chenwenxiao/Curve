@@ -1,15 +1,17 @@
-# Mikuru2 Label-Tool
+# Curve Label-Tool
 
-![Mikuru2](https://github.com/chenwenxiao/mikuru2/raw/master/LabelServer/public/ico/Mikuru.ico)
+![Curve](https://git.peidan.me/cwx17/Curve/raw/master/LabelServer/public/ico/Curve.ico)
 
-Mikuru2 is a fully new label-tool for data labeling. It is from the opprentice tool https://git.peidan.me/cwx17/opprentice.
+Curve is a fully new label-tool for data labeling which include server and frontend. It is from the opprentice tool https://git.peidan.me/cwx17/opprentice.
 
-Now Mikuru2 support for mysql, mongodb or even you have no sql. 
+Now Curve support for mysql, mongodb or even you have no sql.
 
 # Release
 
-Release is for the offline and simple work, it will store data in memory, but its advantage is you don't need any knowledge about nodejs or sql. 
-The release is in [release link](https://github.com/chenwenxiao/mikuru2/releases), you could download the applicatoin of your OS.
+Release is for the offline and simple work, it will store data in memory, but its advantage is you don't need any knowledge about nodejs or sql.
+The release is in [release link](https://github.com/chenwenxiao/Curve/releases), you could download the applicatoin of your OS.
+
+Another easy way is download Curve.zip in the root directory and unzip it. You will get a fully unrequired project and then run `npm start` in LabelServer directory.
 
 # Develop
 
@@ -20,22 +22,22 @@ Download nodejs from https://nodejs.org/en/
 After install mongodb (or mysql) and nodejs
 
 ```
-# clone the repository
+# clone the repository or download Curve.zip with all required libraries.
 git clone ...
 
 # mkdir the data directory for database
 mkdir data
-mongodb --dppath=./data
+mongod --dbpath=./data
 
 # install requirements lib of nodejs
 cd LabelServer
-npm install 
+npm install
 
 # start server
 npm start
 
-# if you want to set the port of Mikuru, * is the port you perfer to
-PORT=* npm start 
+# if you want to set the port of Curve, * is the port you perfer to
+PORT=* npm start
 
 # if you want to start server back
 PORT=* nohup npm start &
@@ -91,3 +93,5 @@ module.exports = {
 ```
 
 If you want to use jsdb which run simply in memory, you could set config.js without mysql_option and mg_path. Our release version is also by defaultly using this.
+
+Curve may be slow when the anomaly interval is too much because we use zones of hightcharts to color these interval, in future, we try to achieve a new workflow using the colorline of blacklabel's plugin(Maybe update with Curve).

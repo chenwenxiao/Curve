@@ -131,7 +131,7 @@
 	font-family: 'Blokk', Arial, sans-serif;
 }
 
-[class^="icon-"]::before, 
+[class^="icon-"]::before,
 [class*=" icon-"]::before {
 	display: block;
 	margin-bottom: 0.5em;
@@ -164,16 +164,16 @@
 	content: "\e024";
 }
 
-.icon-mikuru {
+.icon-curve {
 	text-align: center;
 }
 
-.icon-mikuru h1 {
-	font: 14px 'Helvetica Neue', Helvetica, Arial, sans-serif;
+.icon-curve h1 {
+	font-family: 'Helvetica Neue', 'Raleway', Helvetica, Arial, sans-serif;
 	position: absolute;
-	top: -280px;
+	top: -360px;
 	width: 100%;
-	font-size: 180px;
+	font-size: 280px;
 	font-weight: 100;
 	text-align: center;
 	color: rgba(175, 47, 47, 0.15);

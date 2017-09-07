@@ -7,8 +7,8 @@ module.exports = {
     Snap: true
   },
   output: {
-    path: path.resolve(__dirname, '../LabelServer/public/dist'),
-    publicPath: '/dist/',
+    path: path.resolve(__dirname, './dist'),
+    publicPath: 'dist/',
     filename: 'build.js'
   },
   resolveLoader: {

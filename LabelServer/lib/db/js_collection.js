@@ -43,16 +43,12 @@ class JsCollection extends Collection {
    * @param {int} step - Time timestamp's step in selecting.
    * @param {int} shift - The shift of timestamp mod step.
    * @param {int} global_min - The minimize timestamp in all the series.
-   * @param {bool} download - Download means whether download the
-   * step-and-step data from the server. If it is false, we will not do
-   * down-sample but push all data to client. If it is true, we will use the
-   * down-sample.
    * @return {Promise.<Array>} - The list of value whose index in [start start +
    * step, start + 2 * step, ..., start + k * step]. The type of the element of
    * list is always include (float, bool) or (float, int). Remember, the
    * element is a class include `timestamp` and `value`.
    */
-  getDocs(start, end, step, shift, global_min, download) {
+  getDocs(start, end, step, shift, global_min) {
     let JsCollection = this;
     let residual = (global_min + step - (shift % step)) % step;
     if (residual < 0)
@@ -63,8 +59,6 @@ class JsCollection extends Collection {
         let flag = true;
         flag &= (JsCollection.col[i].timestamp <= end &&
         JsCollection.col[i].timestamp >= start);
-        if (download)
-          flag &= (JsCollection.col[i].timestamp % step == residual);
         if (JsCollection.kpi)
           flag &= (JsCollection.col[i].kpi == JsCollection.kpi);
         if (flag)
@@ -77,7 +71,12 @@ class JsCollection extends Collection {
       let labels = [];
       for (let i = 0; i < rows.length; ++i) {
         let tmp = rows[i];
-        labels.push([(parseInt(tmp.timestamp) + shift) * multiple, parseFloat(tmp.value), tmp.label == null ? 0 : (tmp.label ? 1 : 0)]);
+        labels.push([
+          (parseInt(tmp.timestamp) + shift) * multiple,
+          parseFloat(tmp.value),
+          tmp.label == null ? 0 : (tmp.label ? 1 : 0),
+          tmp.anomaly == null ? 0 : (tmp.anomaly ? 1 : 0)
+        ]);
       }
       return labels;
     });
@@ -312,7 +311,7 @@ class JsCollection extends Collection {
     return new Promise(function (resolve, reject) {
       for (let i in JsCollection.col)
         if (JsCollection.col[i].kpi == JsCollection.kpi)
-          JsCollection.col[i].splice(i--, 1);
+          JsCollection.col.splice(i--, 1);
       resolve(JsCollection);
     })
   }

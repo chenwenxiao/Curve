@@ -1,86 +1,134 @@
+<script src="../node_modules/highcharts/highstock.src.js"></script>
 <template>
-  <div class="container" :class="{'show-menu': show_menu}">
-    <optionmenu @toggleContainer="toggleContainer" @updateOption="updateOption"
-                ref="menu"></optionmenu>
+    <div class="container"
+         :class="{'show-menu': show_menu}">
+        <optionmenu @toggleContainer="toggleContainer"
+                    @updateOption="updateOption"
+                    ref="menu">
 
-    <div class="content-wrap" @click="toggleContent">
-      <div class="content">
-        <div id="container" style="width:100%;"></div>
-        <globalbar ref="globalbar"
-                   @update="update"/>
-        <el-dialog title="上传数据" v-model="upload.visible" size="none">
-          <el-upload action="upload" type="drag" :multiple="true">
-            <i class="el-icon-upload"></i>
-            <div class="el-dragger__text">将文件拖到此处，或<em>点击上传</em></div>
-            <div class="el-upload__tip" slot="tip">只能上传csv文件，大小不限</div>
-          </el-upload>
-        </el-dialog>
+        </optionmenu>
+        <div class="content-wrap"
+             @click="toggleContent">
+            <div class="content">
+                <div id="container"
+                     style="width:100%;">
 
-        </uploadcsv>
-        <el-dialog title="数据列表" v-model="series.visible" size="large">
-          <el-form :model="series">
-            <el-form-item v-for="(name, index) in series.names"
-                          :label="'数据' + index" label-width="80px">
-              <el-row :gutter="20">
-                <el-col :span="12">
-                  <el-autocomplete
-                    v-model="series.names[index]"
-                    :fetch-suggestions="querySearch"
-                    placeholder="请输入数据名称"
-                    :trigger-on-focus="false">
-                  </el-autocomplete>
-                </el-col>
-                <el-col :span="7">
-                  <el-input
-                    placeholder="请输入偏移量"
-                    v-model="series.shifts[index]">
-                  </el-input>
-                </el-col>
-                <el-col :span="4">
-                  <el-button @click.prevent="removeSeries(index)">删除</el-button>
-                </el-col>
-              </el-row>
-            </el-form-item>
-          </el-form>
-          <div slot="footer" class="dialog-footer">
-            <el-button @click="cancelSeries">取 消</el-button>
-            <el-button @click="addSeries">新增数据</el-button>
-            <el-button type="primary" @click="confirmSeries">确 定</el-button>
-          </div>
-        </el-dialog>
-      </div>
+                </div>
+                <globalbar ref="globalbar"
+                           @update="update"/>
+                <el-dialog title="上传数据"
+                           v-model="upload.visible"
+                           size="none">
+                    <el-upload action="upload"
+                               type="drag"
+                               :multiple="true">
+                        <i class="el-icon-upload">
+
+                        </i>
+                        <div class="el-dragger__text">
+                            将文件拖到此处，或
+                            <em>
+                                点击上传
+                            </em>
+                        </div>
+                        <div class="el-upload__tip"
+                             slot="tip">
+                            只能上传csv文件，大小不限
+                        </div>
+                    </el-upload>
+                </el-dialog>
+                <el-dialog title="数据列表"
+                           v-model="series.visible"
+                           size="large">
+                    <el-form :model="series">
+                        <el-form-item v-for="(name, index) in series.names"
+                                      :label="'数据' + index"
+                                      label-width="80px">
+                            <el-row :gutter="20">
+                                <el-col :span="12">
+                                    <el-autocomplete
+                                            v-model="series.names[index]"
+                                            :fetch-suggestions="querySearch"
+                                            placeholder="请输入数据名称"
+                                            :trigger-on-focus="true">
+                                    </el-autocomplete>
+                                </el-col>
+                                <el-col :span="7">
+                                    <el-input
+                                            placeholder="请输入偏移量（单位s,m,h,d,w,M,y）"
+                                            v-model="series.shifts[index]">
+                                    </el-input>
+                                </el-col>
+                                <el-col :span="4">
+                                    <el-button @click.prevent="removeSeries(index)">
+                                        删除
+                                    </el-button>
+                                </el-col>
+                            </el-row>
+                        </el-form-item>
+                    </el-form>
+                    <div slot="footer"
+                         class="dialog-footer">
+                        <el-button @click="cancelSeries">
+                            取 消
+                        </el-button>
+                        <el-button @click="addSeries">
+                            新增数据
+                        </el-button>
+                        <el-button type="primary" @click="confirmSeries">
+                            确 定
+                        </el-button>
+                    </div>
+                </el-dialog>
+            </div>
+        </div>
     </div>
-  </div>
-
 </template>
-
 <script>
-  import Highcharts from 'highcharts/highstock';
+  import Highcharts from 'highcharts/highstock.src';
+  import more from 'highcharts/highcharts-more.src';
   import theme from './theme.js'
   import jquery from 'jquery';
   import GlobalBar from './GlobalBar.vue';
   import Menu from './Menu.vue';
   import theme_grid from './theme_grid.js';
+  import keyManager from './KeyManager';
+  import exportCsv from './ExportCsv';
+  import utils from './Utils';
+  import multicolor_series from 'highcharts-multicolor-series';
+  multicolor_series(Highcharts);
 
-  theme_grid(Highcharts);
+  // Insert extend type into highcharts
+  more(Highcharts);
 
-  var _minute = 1000 * 60;
-  var _hour = 1000 * 60 * 60;
-  var _day = 1000 * 60 * 60 * 24;
-  var _week = 1000 * 60 * 60 * 24 * 7;
-  var _month = 1000 * 60 * 60 * 24 * 30;
-  var _year = 1000 * 60 * 60 * 24 * 365;
+  // Initialize the constant of time, i.e, _minue, _hour, _day, _week, _month,
+  // __year. The unit of time is millisecond.
+  let _minute = 1000 * 60;
+  let _hour = 1000 * 60 * 60;
+  let _day = 1000 * 60 * 60 * 24;
+  let _week = 1000 * 60 * 60 * 24 * 7;
+  let _month = 1000 * 60 * 60 * 24 * 30;
+  let _year = 1000 * 60 * 60 * 24 * 365;
+  let INF = 1e20;
 
-  var marks = {};
-  marks['sin'] = [];
-  marks['cos'] = [];
-  var STORAGE_KEY = 'mikuru-2.0';
-  var labelStorage = {
+  // The offline data, now only containing `sin` and `cos`. In future, we will
+  // cache the data in memory if user allow and need it.
+
+  // STORAGE_KEY tne name of key which stores the data in local browser.
+  let STORAGE_KEY = 'Curve-2.2.0';
+  let labelStorage = {
     rem: {},
+    // Get all the name of data set from server if the network is connected and
+    // server support it, or from local using the cached data. In current
+    // version, we only have `sin` and `cos` in local storage.
     getNames: function (App) {
       return App.$http.get('/name').then(function (res) {
-        return JSON.parse(res.data);
+        // Get the name list from server.
+        if (typeof res.data == "string")
+          return JSON.parse(res.data);
+        return res.data;
       }, function (res) {
+        // Get the data from local storage.
         return [{
           value: 'sin'
         }, {
@@ -90,315 +138,303 @@
     },
 
     virtual_get: function (name, index) {
-      var flag = 0;
-      for (var i = 0; i < marks[name].length; ++i)
-        if (marks[name][i][0] <= index && index <= marks[name][i][1]) {
-          flag = marks[name][i][2];
-        }
-      var y = 0;
+      let y = 0;
       if (name == 'sin')
         y = Math.sin(index * 1.0 / 6000000);
       else if (name == 'cos')
         y = Math.cos(index * 1.0 / 6000000);
-      return [index, y, flag];
+      return [index, y, 0];
     },
-
-    fetch: function (App, start = 0, end = 0, strict = false) {
-      var LS = this;
-      var pros = [];
-      if (start == 0 && end == 0) {
-        if (App.names.length > 0 && App.option.download == false)
-          App.$message({
-            showClose: true,
-            message: '正在获取数据，请耐心等候'
-          });
-        for (var i = 0; i < App.names.length; ++i) {
-          pros.push((function (i) {
-            return App.$http.get('/label?name=' + App.names[i] + '&shift=' +
-              App.shifts[i] + '&num=' + App.names.length + "&download=" +
-              App.option.download).then(function (res) {
-              var json = JSON.parse(res.data);
-              console.log(json);
-              App.labels[i] = json.labels;
-              App.steps[i] = json.step;
-              if (i == 0) {
-                App.global_max = json.global_max;
-                App.global_min = json.global_min;
-                console.log(App.global_max, App.global_min);
-                App.globalType = utils.judgeExtremeType(App.global_min, App.global_max);
-                if (App.globalType == 'month' || App.globalType == 'year') {
-                  App.window_max = App.global_min + _week;
-                  App.window_min = App.global_min;
-                } else {
-                  App.window_max = App.global_max;
-                  App.window_min = App.global_min;
-                }
-              }
-              return false;
-            }, function (res) {
-              if (App.option.message)
-                App.$message({
-                  showClose: true,
-                  message: '数据获取失败，切换到临时数据',
-                  type: 'error'
-                });
-              App.labels[i] = [];
-              var labels = App.labels[i];
-              if (i == 0) App.steps[i] = 40 * 1000;
-              else App.steps[i] = 60 * 1000;
-
-              console.log(App.steps);
-              var start = 1258675200000;
-              var end = 1258675200000 + 100000 * 60 * 1000;
-              var step = utils.judgeStep(App.steps[i], end - start, App.names.length, true);
-              if (!App.option.download)
-                step = App.steps[i];
-              var istart = Math.round(start / step) * step;
-              var iend = Math.round(end / step) * step;
-              for (var j = istart; j <= iend; j += step) {
-                var tmp = labelStorage.virtual_get(App.names[i], j - parseInt(App.shifts[i]));
-                tmp[0] += parseInt(App.shifts[i]);
-                App.labels[i].push(tmp);
-              }
-              if (i == 0) {
-                App.global_max = labels[labels.length - 1][0];
-                App.global_min = labels[0][0];
-                App.globalType = utils.judgeExtremeType(App.global_min, App.global_max);
-                if (App.globalType == 'month' || App.globalType == 'year') {
-                  App.window_max = App.global_min + _week;
-                  App.window_min = App.global_min;
-                } else {
-                  App.window_max = App.global_max;
-                  App.window_min = App.global_min;
-                }
-              }
-              return false;
-            });
-          })(i));
-        }
-      } else {
-        //App.chart.showLoading('Loading data from server...');
-        for (var i = 0; i < App.names.length; ++i) {
-          pros.push((function (i) {
-            var step = utils.judgeStep(App.steps[i], end - start, App.names.length);
-            var exstart = Math.max(App.global_min, start - 500 * step);
-            var exend = Math.min(App.global_max, end + 500 * step);
-
-            var drstart = Math.max(App.global_min, start - 300 * step);
-            var drend = Math.min(App.global_max, end + 300 * step);
-
-            var istart = Math.round(drstart / step) * step;
-            var iend = Math.round(drend / step) * step;
-            console.log(istart, iend, step);
-            console.log(LS.rem[i]);
-
-            var lazy = false;
-            if (LS.rem[i])
-              lazy = LS.rem[i].step == step && LS.rem[i].istart <= istart && LS.rem[i].iend >= iend;
-            if (lazy && !strict) {
-              return Promise.resolve(true);
-            } else {
-              istart = Math.round(exstart / step) * step;
-              iend = Math.round(exend / step) * step;
-              LS.rem[i] = {
-                istart: istart,
-                iend: iend,
-                step: step
-              };
-              return App.$http.get('/label?name=' + App.names[i] + '&start='
-                + exstart + '&end=' + exend + '&shift=' + App.shifts[i] +
-                '&num=' + App.names.length + "&download=" +
-                App.option.download).then(function (res) {
-                App.labels[i] = JSON.parse(res.data).labels;
-                return lazy;
-              }, function (res) {
-                if (App.option.message)
-                  App.$message({
-                    showClose: true,
-                    message: '数据获取失败，切换到临时数据',
-                    type: 'error'
-                  });
-                App.labels[i] = [];
-                for (var j = istart; j <= iend; j += step) {
-                  var tmp = labelStorage.virtual_get(App.names[i], j - parseInt(App.shifts[i]));
-                  tmp[0] += parseInt(App.shifts[i]);
-                  App.labels[i].push(tmp);
-                }
-                return lazy;
-              });
-            }
-          })(i));
-        }
-      }
-      return Promise.all(pros).then(function (res) {
-        console.log('fetch all', res);
-        var ans = true;
-        for (var i = 0; i < res.length; ++i)
-          ans = ans && res[i];
-        return ans;
-      });
-    },
-
-    reload: function (App, chart, start, end, strict = false) {
-      console.log(App.labels[0]);
-      if (App.option.download)
-        return labelStorage.fetch(App, start, end, strict).then(function (res) {
-          labelStorage.redraw(App, strict, res, chart)
+    fetch: function (App,
+                     start = 0,
+                     end = 0,
+                     strict = false) {
+      let LS = this;
+      let pros = [];
+      if (App.names.length > 0)
+        App.$message({
+          showClose: true,
+          message: '正在获取数据，请耐心等候'
         });
-      else
-        return Promise.resolve(labelStorage.redraw(App, strict, true, chart));
-    },
+      for (let i = 0; i < App.names.length; ++i) {
+        pros.push((function (i) {
+          let proc = null;
+          if (labelStorage.rem[App.names[i] + "\'s" + App.shifts[i]] != null)
+            proc = Promise.resolve(labelStorage.rem[App.names[i] + "\'s" + App.shifts[i]])
+          else
+            proc = App.$http.get('/label?name=' + App.names[i] + '&shift=' +
+              App.shifts[i] + '&num=' + App.names.length + '&' + Math.random()
+            )
+          return proc.then(function (res) {
+            let json = res.data;
+            if (typeof res.data == "string")
+              json = JSON.parse(res.data);
+            //console.log(json);
+            App.labels[i] = json.labels;
+            App.steps[i] = json.step;
+            labelStorage.rem[App.names[i]] = { data : json };
 
-    redraw: function (App, strict, res, chart) {
-      if (strict || !res) {
-        console.log(res);
-        console.log(App.labels);
-        if (!res)
-          for (var i = 0; i < App.labels.length; ++i)
-            chart.series[i].setData(App.labels[i]);
-        // chart.hideLoading();
-        for (var i = 0; i < App.labels.length; ++i) {
-          var zones = utils.judgeZones(App.labels[i], chart.series[i].color, chart.series[i].zones, App.steps[i]);
-          chart.series[i].zones = zones;
-          chart.series[i].show();
-          if (App.option.download == false)
-            if (chart.series.length > App.labels.length + i) {
-              chart.series[App.labels.length + i].zones = zones;
-              chart.series[App.labels.length + i].show();
+            labelStorage.renderColor(
+              App, i, null, null, App.shifts[i]
+            );
+            if (i == 0) {
+              App.global_max = json.global_max;
+              App.global_min = json.global_min;
+              //console.log(App.global_max, App.global_min);
+              App.globalType = utils.judgeExtremeType(
+                App.global_min,
+                App.global_max
+              );
+              if (App.globalType == 'month' || App.globalType == 'year') {
+                App.window_max = App.global_min + _week;
+                App.window_min = App.global_min;
+              } else {
+                App.window_max = App.global_max;
+                App.window_min = App.global_min;
+              }
             }
-          console.log("Series");
-          console.log(chart.series);
+          }, function (res) {
+            if (App.option.message)
+              App.$message({
+                showClose: true,
+                message: '数据获取失败，切换到临时数据',
+                type: 'error'
+              });
+            App.labels[i] = [];
+            let labels = App.labels[i];
+            if (i == 0) App.steps[i] = 40 * 1000;
+            else App.steps[i] = 60 * 1000;
+            //console.log(App.steps);
+            let start = 1258675200000;
+            let end = 1258675200000 + 300000 * 60 * 1000;
+            let step = utils.judgeStep(
+              App.steps[i],
+              end - start,
+              App.names.length, true
+            );
+            step = App.steps[i];
+            let istart = Math.round(start / step) * step;
+            let iend = Math.round(end / step) * step;
+            for (let j = istart; j <= iend; j += step) {
+              let tmp = labelStorage.virtual_get(
+                App.names[i],
+                j - parseInt(App.shifts[i])
+              );
+              tmp[0] += parseInt(App.shifts[i]);
+              App.labels[i].push(tmp);
+            }
+
+            labelStorage.renderColor(
+              App, i, null, null, App.shifts[i]
+            );
+            if (i == 0) {
+              App.global_max = labels[labels.length - 1][0];
+              App.global_min = labels[0][0];
+              App.globalType = utils.judgeExtremeType(
+                App.global_min,
+                App.global_max
+              );
+              if (App.globalType == 'month' || App.globalType == 'year') {
+                App.window_max = App.global_min + _week;
+                App.window_min = App.global_min;
+              } else {
+                App.window_max = App.global_max;
+                App.window_min = App.global_min;
+              }
+            }
+          });
+        })(i));
+      }
+      return Promise.all(pros);
+    },
+    cache: [],
+    // Draw the graph using the data of `procLabel`.
+    redraw: function (App,
+                      chart,
+                      start = null,
+                      end = null,
+                      strict = false) {
+      while (labelStorage.cache.length < App.labels.length)
+        labelStorage.cache.push(null);
+      for (let i = 0; i < App.labels.length; ++i) {
+        let pack = utils.sampling(
+          App.renders[i], App.shifts[i],
+          App.labels.length, labelStorage.cache[i], start, end, strict
+        );
+        App.chart.series[i].setData(pack.sample, true, false, false);
+        labelStorage.cache[i] = pack;
+      }
+      for (let i = 0; i < App.labels.length; ++i) {
+        if (App.option.plotLine) {
+          if (i == 0) {
+            let value = utils.judgePlotLine(
+              App.labels[i],
+              start,
+              end
+            );
+            // Because we maybe would like to use virtual
+            // redraw function in a virtual graph.
+            if (chart.yAxis) {
+              for (let j = 0; j < value.length; ++j) {
+                chart.yAxis[0].removePlotLine(
+                  'plot-line-average-' + j
+                );
+                if (j == 0)
+                  chart.yAxis[0].addPlotLine({           // Insert to Axis[0]
+                    zIndex: 6,
+                    value: value[j],                           // Where value is equal to `value`
+                    width: 2,                           // Width of line is 2px
+                    color: '#1CFFC5',                  // The color of plot line
+                    id: 'plot-line-average-' + j,                  // Id of plot line, need it to remove this plot line
+                    label: {
+                      text: "Average value: " + value[j],    // Content of label
+                      align: 'left',                // Place on the left of window
+                      x: 10,                         // The margin to left is 10px
+                      style: {
+                        fontSize: '14px',
+                        fontWeight: 'bold'
+                      }
+                    }
+                  });
+                else
+                  chart.yAxis[0].addPlotLine({           // Insert to Axis[0]
+                    zIndex: 5,
+                    value: value[j],                           // Where value is equal to `value`
+                    width: 2,                           // Width of line is 2px
+                    color: '#1CFFC5',                  // The color of plot line
+                    dashStyle: 'longdashdot',
+                    id: 'plot-line-average-' + j
+                  });
+              }
+            }
+          }
+        } else {
+          if (chart.yAxis) {
+            // A trick that fix the length of value of plot lines.
+            for (let j = 0; j < 3; ++j) {
+              chart.yAxis[0].removePlotLine(
+                'plot-line-average-' + j
+              );
+            }
+          }
         }
-        // chart.redraw();
+        //console.log("Series");
+        //console.log(chart.series);
+      }
+      // chart.redraw();
+    },
+    renderColor: function(App, i, start, end, shift) {
+      let colors = [
+        Highcharts.theme.colors[i % Highcharts.theme.colors.length],
+        '#f45b5b',
+        '#f4f45b',
+        '#5bf45b'
+      ];
+      if (start == null)
+        start = 0;
+      else
+        start = utils.binarySearch(App.labels[i], start + shift);
+      if (end == null)
+        end = INF;
+      else
+        end = end + shift;
+      for (let j = start; j < App.labels[i].length; ++j) {
+        if (App.labels[i][j][0] > end)
+          break;
+        let tmp = {
+          x: App.labels[i][j][0],
+          y: App.labels[i][j][1],
+          segmentColor: colors[
+            utils.judgeState(App.labels[i][j], App.option.anomaly)
+          ]
+        }
+        while (App.renders[i].length <= j)
+          App.renders[i].push(tmp);
+        App.renders[i][j] = tmp;
       }
     },
-
+    // Save the mark operator and update `labels` array.
     save: function (App, name, start, end, op) {
       start -= App.shifts[0];
       end -= App.shifts[0];
       return App.$http.post('/mark?name=' + name +
         '&start=' + start +
         '&end=' + end +
-        '&op=' + op)
+        '&op=' + op + '&' + Math.random())
         .then(function (res) {
           for (let i = 0; i < App.labels.length; ++i)
             if (App.names[i] == App.names[0]) {
-              let x = utils.binarySearch(App.labels[i], start + App.shifts[i]);
+              let x = utils.binarySearch(
+                App.labels[i],
+                start + App.shifts[i]
+              );
+              // Notice the shifts affect the axis x so we need translate the
+              // x axis to compare with the labels.
               for (; x < App.labels[i].length; x++) {
                 if (App.labels[i][x][0] > end + App.shifts[i])
                   break;
                 App.labels[i][x][2] = op;
               }
+
+              labelStorage.renderColor(
+                App, i, start, end, App.shifts[i]
+              )
             }
           if (App.option.message)
+          // Show the message if need (open the message switch).
             App.$message({
               showClose: true,
               message: '数据[' + start + ',' + end + ']获标记成功',
               type: 'success'
             });
         }, function (res) {
+          // Show the message if need (open the message switch).
           if (App.option.message)
             App.$message({
               showClose: true,
               message: '数据获标记失败',
               type: 'error'
             });
+          // Modify the labels of local storage.
           for (let i = 0; i < App.labels.length; ++i)
             if (App.names[i] == App.names[0]) {
-              let x = utils.binarySearch(App.labels[i], start + App.shifts[i]);
+              let x = utils.binarySearch(
+                App.labels[i],
+                start + App.shifts[i]
+              );
               for (; x < App.labels[i].length; x++) {
                 if (App.labels[i][x][0] > end + App.shifts[i])
                   break;
                 App.labels[i][x][2] = op;
               }
+
+              labelStorage.renderColor(
+                App, i, start, end, App.shifts[i]
+              )
             }
-          marks[name].push([start, end, op]);
         })
     }
   };
-
-  var filters = {
+  let filters = {
     all: function (labels) {
       return labels
     },
-
     positive: function (labels) {
       return labels.filter(function (labels) {
         return labels.label == true
       })
     },
-
     unpositive: function (labels) {
       return labels.filter(function (labels) {
         return labels.label == false
       })
     },
-
     label: function (labels, flag) {
       return labels.filter(function (labels) {
         return labels.label == flag
       })
     }
-  }
-
-  var utils = {
-    judgeZones: function (labels, defaultColor, oldZones, unitStep) {
-      console.log(labels);
-      var zones = [];
-      var last = 0;
-      for (var i = 0; i < labels.length; ++i) {
-        if (labels[i][2] != last) {
-          zones.push({
-            value: labels[i][0] - unitStep / 2,
-            color: last > 0 ? '#f45b5b' : defaultColor
-          });
-          last = labels[i][2];
-        }
-      }
-      zones.push({color: last > 0 ? '#f45b5b' : defaultColor});
-      while (zones.length < oldZones.length)
-        zones.push({color: defaultColor});
-      console.log(zones)
-      return zones;
-    },
-
-    binarySearch: function (data, dest) {
-      //find the smallest index in data whose value is large or equal than dest
-      var h = data.length - 1, l = 0;
-      if (dest > data[h][0])
-        return h + 1;
-      while (l < h) {
-        var m = Math.floor((h + l) / 2);
-        if (dest > data[m][0]) {
-          l = m + 1;
-        } else {
-          h = m;
-        }
-      }
-      return l;
-    },
-    judgeExtremeType: function (min, max) {
-      //judge the extrme type, including day, week, month. year
-      var size = max - min;
-      if (size <= _day)
-        return 'day';
-      else if (size <= _week)
-        return 'week';
-      else if (size <= _month)
-        return 'month';
-      else
-        return 'year';
-    },
-    judgeStep: function (unit, size, nums, global = false) {
-      var step = unit;
-      if (global) nums = 1;
-      while (size / step * nums > 1500) {
-        step = step * 2;
-      }
-      return step;
-    }
-
-  }
+  };
 
   export default {
     data() {
@@ -426,39 +462,44 @@
           label: true,
           scale: false,
           message: false,
-          download: false
-        }
+          plotLine: false,
+          anomaly: false,
+          animation: true,
+          theme: true
+        },
+        setExtremesLock: Promise.resolve(),
+        setWindow: true
       }
     },
-
     mounted() {
-      var App = this;
+      let App = this;
       App.names = window.names;
       App.shifts = window.shifts;
       App.steps = {};
-      labelStorage.getNames(App).then(function (names) {
-        App.allNames = names;
-      });
+      labelStorage.getNames(App)
+        .then(function (names) {
+          App.allNames = names;
+        });
+      keyManager.init();
       this.init();
-
     },
-
     watch: {
       '$route' (to, from) {
       },
     },
-
     computed: {},
-
     filters: {},
-
     methods: {
       init: function () {
-        var App = this;
+        let App = this;
         App.labels = [];
+        App.renders = [];
         App.steps = {};
-        for (var i = 0; i < App.names.length; ++i)
+        for (let i = 0; i < App.names.length; ++i) {
           App.labels.push([]);
+          App.renders.push([]);
+        }
+        labelStorage.cache = [];
         let chart = {};
         labelStorage.fetch(App)
           .then(() => {
@@ -468,44 +509,178 @@
                 show: function () {
                   // Do nothing here
                 },
-                zones: [],
-                color: Highcharts.theme.colors[i % Highcharts.theme.colors.length]
+                update: function () {
+                },
+                setData: function (data, redraw, anomation, points) {
+                  this.data = data
+                },
+                data: []
               });
-            return labelStorage.redraw(App, true, true, chart)
+            App.chart = chart;
+            labelStorage.redraw(App, chart)
           })
           .then(function () {
-            var container = jquery('#container')[0];
-            var pre_series = [];
-            console.log("zones");
-            console.log(chart.series);
-            for (var i = 0; i < App.labels.length; ++i)
+            // Try to show the opprentice label result
+            let container = jquery('#container')[0];
+            let pre_series = [];
+            //console.log(chart.series);
+            for (let i = 0; i < App.labels.length; ++i) {
+              let showInNavigator =
+                App.global_min <= App.labels[i][App.labels[i].length - 1][0] &&
+                App.global_max >= App.labels[i][0][0];
               pre_series.push({
                 lineWidth: i == 0 ? 2 : 0.5,
-                name: App.names[i] + (App.shifts[i] != 0 ? '\'s ' + App.shifts[i] : ''),
-                data: App.labels[i],
-                zoneAxis: 'x',
-                zones: chart.series[i].zones,
-                showInNavigator: App.global_min <= App.labels[i][App.labels[i].length - 1][0] &&
-                App.global_max >= App.labels[i][0][0]
+                name: App.names[i] +
+                (App.shifts[i] != 0 ? '\'s ' + App.shifts[i] : ''),
+                data: App.chart.series[i].data,
+                showInNavigator: showInNavigator,
+                turboThreshold: 100000000
               });
-            var option = {
+            }
+
+            function goPrev() {
+              let max = App.chart.xAxis[0].max;
+              let min = App.chart.xAxis[0].min;
+              let step = max - min;
+              min -= step;
+              max -= step;
+              App.chart.xAxis[0].setExtremes(
+                min,
+                max
+              );
+              let size = App.window_max - App.window_min;
+              if (min < App.window_min)
+                App.update(min, min + size);
+              if (max > App.window_max)
+                App.update(max - size, max);
+            }
+
+            function goNext() {
+              let max = App.chart.xAxis[0].max;
+              let min = App.chart.xAxis[0].min;
+              let step = max - min;
+              min += step;
+              max += step;
+              App.chart.xAxis[0].setExtremes(
+                min,
+                max
+              );
+              let size = App.window_max - App.window_min;
+              if (min < App.window_min)
+                App.update(min, min + size);
+              if (max > App.window_max)
+                App.update(max - size, max);
+            }
+
+            function zoomIn() {
+              let max = App.chart.xAxis[0].max;
+              let min = App.chart.xAxis[0].min;
+              let step = max - min;
+              min += step / 4;
+              max -= step / 4;
+              App.chart.xAxis[0].setExtremes(
+                min,
+                max
+              );
+              let size = App.window_max - App.window_min;
+              if (min < App.window_min)
+                App.update(min, min + size);
+              if (max > App.window_max)
+                App.update(max - size, max);
+            }
+
+
+            function zoomOut() {
+              let max = App.chart.xAxis[0].max;
+              let min = App.chart.xAxis[0].min;
+              let step = max - min;
+              min -= step / 2;
+              max += step / 2;
+              App.chart.xAxis[0].setExtremes(
+                min,
+                max
+              );
+              let size = App.window_max - App.window_min;
+              if (min < App.window_min)
+                App.update(min, min + size);
+              if (max > App.window_max)
+                App.update(max - size, max);
+            }
+
+            keyManager.bindEvent('a', goPrev);
+            keyManager.bindEvent('d', goNext);
+            keyManager.bindEvent('w', zoomOut);
+            keyManager.bindEvent('s', zoomIn);
+
+            if (App.option.theme)
+              theme_grid(Highcharts);
+            else
+              theme(Highcharts);
+            let option = {
               chart: {
-                type: 'spline',
+                animation: App.option.animation,
+                type: 'coloredline',
                 zoomType: 'x',
+                resetZoomButton: {
+                  theme: {
+                    display: 'inline'
+                  }
+                },
                 events: {
                   load: function () {
-                    this.xAxis[0].setExtremes(App.window_min, App.window_max);
+                    this.xAxis[0].setExtremes(
+                      App.window_min,
+                      App.window_max
+                    );
                     this.xAxis[0].update({
                       min: App.window_min,
                       max: App.window_max
                     });
+
+                    //check if History API is available
+                    if (window.history && window.history.pushState) {
+                      //push the initial chart state
+                      var e = this.xAxis[0].getExtremes();
+                      window.history.pushState({
+                        time: 0,
+                        min: e.min,
+                        max: e.max
+                      }, "");
+
+                      //back-forward event handler
+                      jquery(window).on("popstate", function (event) {
+                        if (event.originalEvent.state) {
+                          let min = event.originalEvent.state.min;
+                          let max = event.originalEvent.state.max;
+                          App.chart.xAxis[0].setExtremes(min, max, true, false);
+                          let size = App.window_max - App.window_min;
+                          if (min < App.window_min)
+                            App.update(min, min + size);
+                          if (max > App.window_max)
+                            App.update(max - size, max);
+                        }
+                      });
+                    }
                   },
                   selection: function (e) {
-                    if (!App.option.scale)
-                      if (e.xAxis) {
+                    let scale = App.option.scale || keyManager.checkCode('z');
+                    if (!scale) {
+                      if (e.xAxis && App.chart.options.chart.zoomType == 'x') {
                         if (App.extremeType == 'day') {
-                          labelStorage.save(App, App.names[0], e.xAxis[0].min, e.xAxis[0].max, App.option.label).then(function (res) {
-                            labelStorage.reload(App, App.chart, Math.round(App.chart.xAxis[0].min), Math.round(App.chart.xAxis[0].max), true);
+                          labelStorage.save(
+                            App,
+                            App.names[0],
+                            e.xAxis[0].min,
+                            e.xAxis[0].max,
+                            (keyManager.checkCode('spacebar')) ^
+                            App.option.label
+                          ).then(function (res) {
+                            labelStorage.redraw(
+                              App, App.chart,
+                              Math.round(App.chart.xAxis[0].min),
+                              Math.round(App.chart.xAxis[0].max),
+                              true
+                            );
                           });
                         } else {
                           if (App.option.message)
@@ -516,8 +691,21 @@
                             });
                         }
                       }
-                    console.log(App.option.scale);
-                    return App.option.scale;
+                    } else {
+                      if (App.chart.options.chart.zoomType == 'y') {
+                        if (!App.chart.resetZoomButton || App.chart.resetZoomButton == 'blocked') {
+                          App.chart.showResetZoom();
+                          App.chart.resetZoomButton.on('click',
+                            () => {
+                              App.chart.yAxis[0].setExtremes(null, null);
+                              App.chart.resetZoomButton = App.chart.resetZoomButton.destroy();
+                            }
+                          )
+                        }
+                      }
+                    }
+                    //console.log(App.option.scale);
+                    return scale;
                   }
                 }
               },
@@ -546,45 +734,36 @@
                   count: 1,
                   text: '1d'
                 }, {
-                  type: 'all',
+                  type: 'week',
                   count: 1,
-                  text: 'all'
+                  text: '1w'
                 }, {
                   type: '',
                   count: 1,
                   text: 'Prev',
-                  click: function () {
-                    let max = App.chart.xAxis[0].max;
-                    let min = App.chart.xAxis[0].min;
-                    let step = max - min;
-                    App.chart.xAxis[0].setExtremes(min - step, max - step);
-                  }
+                  click: goPrev
                 }, {
                   type: '',
                   count: 1,
                   text: 'Next',
-                  click: function () {
-                    let max = App.chart.xAxis[0].max;
-                    let min = App.chart.xAxis[0].min;
-                    let step = max - min;
-                    App.chart.xAxis[0].setExtremes(min + step, max + step);
-                  }
+                  click: goNext
                 }, {
                   type: '',
                   count: 1,
-                  text: 'D&S',
-                  click: function () {
+                  text: 'X',
+                  click: function (event) {
                     if (App.chart.options.chart.zoomType == 'x') {
                       App.chart.update({
                         chart: {
-                          zoomType: undefined
+                          zoomType: 'y'
                         }
                       });
                       if (App.option.message)
                         App.$message({
                           showClose: true,
-                          message: '切换到拖动模式'
+                          message: '切换到y轴模式'
                         });
+                      this.lastElementChild.textContent = "Y"
                     } else {
                       App.chart.update({
                         chart: {
@@ -594,8 +773,9 @@
                       if (App.option.message)
                         App.$message({
                           showClose: true,
-                          message: '切换到选择模式'
+                          message: '切换到x轴模式'
                         });
+                      this.lastElementChild.textContent = "X"
                     }
                   }
                 }, {
@@ -603,16 +783,17 @@
                   count: 1,
                   text: 'Series',
                   click: function () {
-                    labelStorage.getNames(App).then(function (names) {
-                      App.allNames = names;
-                      App.series.names = [];
-                      App.series.shifts = [];
-                      for (var i = 0; i < App.names.length; ++i) {
-                        App.series.names.push(App.names[i]);
-                        App.series.shifts.push(App.shifts[i]);
-                      }
-                      App.series.visible = true;
-                    });
+                    labelStorage.getNames(App)
+                      .then(function (names) {
+                        App.allNames = names;
+                        App.series.names = [];
+                        App.series.shifts = [];
+                        for (let i = 0; i < App.names.length; ++i) {
+                          App.series.names.push(App.names[i]);
+                          App.series.shifts.push(App.shifts[i]);
+                        }
+                        App.series.visible = true;
+                      });
                   }
                 }, {
                   type: '',
@@ -628,16 +809,50 @@
                   click: function () {
                     App.toggleMenu();
                   }
+                }, {
+                  type: '',
+                  count: 1,
+                  text: 'Get Csv',
+                  click: function () {
+                    if (App.names.length > 0) {
+                      exportCsv(App.labels[0], App.names[0]);
+                    }
+                  }
                 }]
               },
               xAxis: {
                 //minRange: 1000 * 60 * 60,
                 events: {
                   setExtremes: function (e) {
-                    App.extremeType = utils.judgeExtremeType(e.min, e.max);
+                    App.extremeType = utils.judgeExtremeType(
+                      e.min,
+                      e.max
+                    );
                   },
                   afterSetExtremes: function (e) {
-                    labelStorage.reload(App, this, Math.round(e.min), Math.round(e.max))
+                    //use History API to navigate through the chart
+                    if (e.trigger != null && window.history && window.history.pushState) {
+                      //fired only if extremes changed by the user action (not autoupdate or simple setExtremes call)
+                      var l = window.history.state;
+                      var t = Date.now();
+                      if (l != null && t - l.time < 30) {
+                         //If last changes were made within history.opInterval interval just update last history record
+                         window.history.replaceState({ time: t, min: e.min, max: e.max }, "");
+                      }
+                      else {
+                       //Add new record otherwise
+                       window.history.pushState({ time: t, min: e.min, max: e.max }, "");
+                      }
+                    }
+                    App.setExtremesLock = App.setExtremesLock.then(
+                      () => {
+                        labelStorage.redraw(
+                          App, App.chart,
+                          Math.round(e.min),
+                          Math.round(e.max)
+                        )
+                      }
+                    );
                   }
                 }
               },
@@ -646,20 +861,34 @@
                 // min: -1.0
               },
               scrollbar: {
-                enabled: false
+                enabled: App.labels.length > 0
               },
               navigator: {
                 adaptToUpdatedData: false
               },
+              credits: {
+                enabled: false
+              },
               series: pre_series
             };
             App.chart = Highcharts.stockChart(container, option);
-            var autosize = function () {
-              App.chart.setSize(Math.max(100, jquery(window).width()), Math.max(100, jquery(window).height() - 20), false);
+            let autosize = function () {
+              App.chart.setSize(
+                Math.max(
+                  100,
+                  jquery(window).width()
+                ),
+                Math.max(
+                  100,
+                  jquery(window).height() - 20
+                ),
+                false
+              );
             };
             jquery(window).resize(autosize);
             autosize();
-            var c = App.chart.rangeSelector.buttons, d = App.chart.options.rangeSelector.buttons;
+            let c = App.chart.rangeSelector.buttons;
+            let d = App.chart.options.rangeSelector.buttons;
 
             function bindEvents(b, c) {
               if (c.click) {
@@ -668,29 +897,38 @@
             }
 
             if (c && d) {
-              for (var i = 0; i < c.length; i++) {
+              for (let i = 0; i < c.length; i++) {
                 if (d[i]) bindEvents(c[i], d[i]);
               }
             }
-            App.$refs.globalbar.$emit('init', App.global_max, App.global_min, App.window_max, App.window_min);
+            App.$refs.globalbar.$emit(
+              'init',
+              App.global_max,
+              App.global_min,
+              App.window_max,
+              App.window_min
+            );
           });
       },
       destroy: function () {
         this.$refs.globalbar.$emit('destroy');
         this.chart.destroy();
-        labelStorage.rem = {};
-
       },
       update: function (window_min, window_max) {
+        console.log(window_min, window_max);
+        this.window_min = window_min;
+        this.window_max = window_max;
         this.chart.xAxis[1].update({
           min: window_min,
           max: window_max
         });
       },
       querySearch: function (name, cb) {
-        var result = name ? this.allNames.filter((state) => {
-            return (state.value.indexOf(name.toLowerCase()) === 0);
-          }) : this.allNames;
+        let result = name ? this.allNames.filter(
+            (state) => {
+              return (state.value.indexOf(name.toLowerCase()) === 0);
+            }
+          ) : this.allNames;
         cb(result);
       },
       removeSeries: function (index) {
@@ -704,13 +942,25 @@
       confirmSeries: function () {
         this.names = this.series.names;
         this.shifts = this.series.shifts;
-        for (var i in this.names)
+        for (let i in this.names)
           if (!this.names[i]) this.names[i] = "";
-        for (var i in this.shifts)
+        for (let i in this.shifts)
           if (!this.shifts[i]) this.shifts[i] = 0;
           else {
             let shift = this.shifts[i].toString();
             let mul_shift = 1;
+            if (shift.indexOf('y') > 0) {
+              shift.replace('d', '');
+              mul_shift = 365 * 86400 * 1000;
+            }
+            if (shift.indexOf('M') > 0) {
+              shift.replace('d', '');
+              mul_shift = 30 * 86400 * 1000;
+            }
+            if (shift.indexOf('w') > 0) {
+              shift.replace('d', '');
+              mul_shift = 7 * 86400 * 1000;
+            }
             if (shift.indexOf('d') > 0) {
               shift.replace('d', '');
               mul_shift = 86400 * 1000;
@@ -744,40 +994,67 @@
         this.series.visible = false;
       },
       toggleContainer: function (show_menu) {
-        console.log(show_menu);
+        //console.log(show_menu);
         this.show_menu = show_menu;
       },
       toggleContent: function (e) {
-        console.log('toggleContent');
+        //console.log('toggleContent');
         if (this.show_menu)
           this.$refs.menu.$emit('toggleMenu');
       },
       toggleMenu: function (e) {
-        console.log('toggleMenu');
+        //console.log('toggleMenu');
         this.$refs.menu.$emit('toggleMenu');
       },
       updateOption: function (option) {
-        console.log('updateOption');
-        this.option = option;
+        //console.log('updateOption');
+        let reinit = false;
+        let redraw = false;
+        if (option.animation != this.option.animation) {
+          if (this.chart) {
+            this.chart.update({
+              chart: {
+                animation: option.animation
+              }
+            })
+          }
+        }
+        if (option.theme != this.option.theme) {
+          reinit = true;
+        }
+        if (option.plotLine != this.option.plotLine)
+          redraw = true;
+        if (option.anomaly != this.option.anomaly)
+          reinit = true;
+        for (let o in option)
+          this.option[o] = option[o];
+        if (reinit)
+          this.init();
+        else if (redraw) {
+          if (this.chart) {
+            labelStorage.redraw(
+              this, this.chart,
+              this.chart.xAxis[0].min,
+              this.chart.xAxis[0].max,
+              true
+            );
+          }
+        }
       }
     },
-
     directives: {},
-
     components: {
       globalbar: GlobalBar,
       optionmenu: Menu
     }
   }
-
 </script>
-
 <style>
-  @import "./css/menu_bubble.css";
-  @import "./css/normalize.css";
-  @import "./fonts/font-awesome-4.7.0/css/font-awesome.min.css";
+    @import "./css/menu_bubble.css";
+    @import "./css/normalize.css";
+    @import "./fonts/font-awesome-4.7.0/css/font-awesome.min.css";
 
-  .el-autocomplete {
-    display: block;
-  }
+    .el-autocomplete {
+        display: block;
+    }
 </style>

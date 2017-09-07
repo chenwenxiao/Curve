@@ -34,7 +34,8 @@ class MysqlCollection extends Collection {
       'timestamp': 'timedata',
       'label': 'is_abnormal',
       'value': 'value',
-      'kpi': 'kpi'
+      'kpi': 'kpi',
+      'anomaly': 'anomaly'
     };
     this.inv_map = {};
     for (let o in this.map)
@@ -87,16 +88,12 @@ class MysqlCollection extends Collection {
    * @param {int} step - Time timestamp's step in selecting.
    * @param {int} shift - The shift of timestamp mod step.
    * @param {int} global_min - The minimize timestamp in all the series.
-   * @param {bool} download - Download means whether download the
-   * step-and-step data from the server. If it is false, we will not do
-   * down-sample but push all data to client. If it is true, we will use the
-   * down-sample.
    * @return {Promise.<Array>} - The list of value whose index in [start start +
    * step, start + 2 * step, ..., start + k * step]. The type of the element of
    * list is always include (float, bool) or (float, int). Remember, the
    * element is a class include `timestamp` and `value`.
    */
-  getDocs(start, end, step, shift, global_min, download) {
+  getDocs(start, end, step, shift, global_min) {
     let MysqlCollection = this;
     let residual = (global_min + step - (shift % step)) % step;
     if (residual < 0)
@@ -104,9 +101,6 @@ class MysqlCollection extends Collection {
     return new Promise(function (resolve, reject) {
       let sql = "select * from " + '`' + MysqlCollection.collectionName + '`';
       sql += " where ";
-      if (download)
-        sql += MysqlCollection.map['timestamp'] +
-          " mod " + step + " = " + residual + " and ";
       sql += MysqlCollection.map['timestamp'] + " <= " + end;
       sql += " and " + MysqlCollection.map['timestamp'] + " >= " + start;
       if (MysqlCollection.kpi)
@@ -117,7 +111,15 @@ class MysqlCollection extends Collection {
         let labels = [];
         for (let i = 0; i < rows.length; ++i) {
           let tmp = MysqlCollection.get_imap(rows[i]);
-          labels.push([(parseInt(tmp.timestamp) + shift) * multiple, parseFloat(tmp.value), tmp.label == null ? 0 : (tmp.label ? 1 : 0)]);
+          let y = parseFloat(tmp.value);
+          if (isNaN(y))
+            y = null;
+          labels.push([
+            (parseInt(tmp.timestamp) + shift) * multiple,
+            y,
+            tmp.label == null ? 0 : (tmp.label ? 1 : 0),
+            tmp.anomaly == null ? 0 : (tmp.anomaly ? 1 : 0)
+          ]);
         }
         resolve(labels);
       });
@@ -400,6 +402,7 @@ class MysqlCollection extends Collection {
       sql += MysqlCollection.map['timestamp'] + " bigint, ";
       sql += MysqlCollection.map['value'] + " double, ";
       sql += MysqlCollection.map['label'] + " int, ";
+      sql += MysqlCollection.map['anomaly'] + " int, ";
       sql += MysqlCollection.map['kpi'] + " text";
       sql += ")";
     } else {

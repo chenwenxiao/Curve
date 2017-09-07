@@ -1,34 +1,43 @@
 {
   "name": "labelserver",
-  "version": "2.1.0",
-  "private": true,
+  "version": "2.2.0",
+  "description": "A web server for Curve",
+  "private": false,
   "main": "main",
+  "author": {
+    "name": "chenwenxiao",
+    "email": "chenwenxiao@live.cn"
+  },
   "scripts": {
     "start": "node --harmony ./bin/www",
-    "build": "electron-packager ./ Mikuru --platform=all --out=../Mikuru --electron-version=1.4.13 --overwrite --icon=./public/ico/Mikuru.ico",
-    "build-linux": "electron-packager ./ Mikuru --platform=linux --out=../Mikuru --electron-version=1.4.13 --overwrite --icon=./public/ico/Mikuru.ico",
-    "build-macos": "electron-packager ./ Mikuru --platform=darwin --out=../Mikuru --electron-version=1.4.13 --overwrite --icon=./public/ico/Mikuru.icns",
-    "build-appstore": "electron-packager ./ Mikuru --platform=mas --out=../Mikuru --electron-version=1.4.13 --overwrite --icon=./public/ico/Mikuru.icns",
-    "build-win": "electron-packager ./ Mikuru --platform=win32 --out=../Mikuru --electron-version=1.4.13 --overwrite --icon=./public/ico/Mikuru.ico",
+    "build": "electron-packager ./ Curve --platform=all --out=../Curve --electron-version=1.4.13 --overwrite --icon=./public/ico/Curve.ico",
+    "build-linux": "electron-packager ./ Curve --platform=linux --out=../Curve --electron-version=1.4.13 --overwrite --icon=./public/ico/Curve.ico",
+    "build-macos": "electron-packager ./ Curve --platform=darwin --out=../Curve --electron-version=1.4.13 --overwrite --icon=./public/ico/Curve.icns",
+    "build-appstore": "electron-packager ./ Curve --platform=mas --out=../Curve --electron-version=1.4.13 --overwrite --icon=./public/ico/Curve.icns",
+    "build-win": "electron-packager ./ Curve --platform=win32 --out=../Curve --electron-version=1.4.13 --overwrite --icon=./public/ico/Curve.ico",
     "watch": "babel lib/ -d src/"
   },
   "dependencies": {
-    "Promise": "^1.0.5",
     "body-parser": "~1.15.2",
     "cookie-parser": "~1.4.3",
-    "csv": "^1.1.0",
+    "csv": "1.1.0",
     "debug": "~2.2.0",
     "express": "~4.14.0",
     "jade": "~1.11.0",
-    "mongodb": "^2.2.14",
+    "mongodb": "2.2.14",
     "morgan": "~1.7.0",
-    "multiparty": "^4.1.2",
-    "mysql": "^2.12.0",
-    "promise": "^7.1.1",
+    "multiparty": "4.1.2",
+    "mysql": "2.12.0",
+    "promise": "7.1.1",
     "serve-favicon": "~2.3.0",
-    "unzip": "^0.1.11"
+    "unzip": "0.1.11"
   },
   "devDependencies": {
-    "babel-preset-env": "^1.1.8"
+    "babel-preset-env": "1.1.8"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "http://git.peidan.me/cwx17/Curve.git"
   }
 }

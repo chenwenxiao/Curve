@@ -44,16 +44,12 @@ class MongoCollection extends Collection {
    * @param {int} step - Time timestamp's step in selecting.
    * @param {int} shift - The shift of timestamp mod step.
    * @param {int} global_min - The minimize timestamp in all the series.
-   * @param {bool} download - Download means whether download the
-   * step-and-step data from the server. If it is false, we will not do
-   * down-sample but push all data to client. If it is true, we will use the
-   * down-sample.
    * @return {Promise.<Array>} - The list of value whose index in [start start +
    * step, start + 2 * step, ..., start + k * step]. The type of the element of
    * list is always include (float, bool) or (float, int). Remember, the
    * element is a class include `timestamp` and `value`.
    */
-  getDocs(start, end, step, shift, global_min, download) {
+  getDocs(start, end, step, shift, global_min) {
     let MongoCollection = this;
     let residual = (global_min + step - (shift % step)) % step;
     if (residual < 0)
@@ -61,26 +57,33 @@ class MongoCollection extends Collection {
     return new Promise(function (resolve, reject) {
       let condition = {
         timestamp: {
-          $gte: start - shift,
-          $lte: end - shift
+          $gte: start,
+          $lte: end
         }
       };
-      if (download)
-        condition.timestamp.$mod = [step, residual];
       if (MongoCollection.kpi)
         condition.kpi = MongoCollection.kpi;
-      MongoCollection.col.find(condition, {
-        sort: {
-          timestamp: 1
-        }
-      }).toArray(function (err, items) {
+      MongoCollection.col.find(condition).toArray(function (err, items) {
         // TODO
         // How to support the various multiple of the timestamp. In here,
         // constant 1000 means the unit of timestamp is 1 second in database
         // but the unit of the timestamp is 1 millisecond in frontend.
+        console.log(condition);
+        console.log(items);
+        console.log(err);
+        items.sort(
+          (a, b) => a.timestamp - b.timestamp
+        );
         let labels = [];
-        for (let i = 0; i < items.length; ++i)
-          labels.push([(parseInt(items[i].timestamp) + shift) * multiple, parseFloat(items[i].value), items[i].label == null ? 0 : (items[i].label ? 1 : 0)]);
+        for (let i = 0; i < items.length; ++i) {
+          let tmp = [
+            (parseInt(items[i].timestamp) + shift) * multiple,
+            parseFloat(items[i].value),
+            items[i].label == null ? 0 : (items[i].label ? 1 : 0),
+            items[i].anomaly == null ? 0 : (items[i].anomaly ? 1 : 0)
+          ];
+          labels.push(tmp);
+        }
         resolve(labels);
       });
     });
@@ -275,6 +278,12 @@ class MongoCollection extends Collection {
     let MongoCollection = this;
     // We can do nothing here, because mongodb's collection can be created auto
     // when it's used.
+
+    // Index the `timestamp` column
+    MongoCollection.col.createIndex({
+      timestamp: 1
+    });
+
     return Promise.resolve(MongoCollection);
   }
 }

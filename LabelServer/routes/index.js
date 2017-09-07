@@ -37,7 +37,7 @@ router.get('/', function (req, res, next) {
 });
 
 router.post('/upload', function (req, res, next) {
-  let root_path = os.tmpdir() + '/mikuru';
+  let root_path = os.tmpdir() + '/Curve';
   let tmp_path = root_path + '/tmp';
   let files_path = root_path + '/files';
   mkdirs(tmp_path);
@@ -55,7 +55,8 @@ router.post('/upload', function (req, res, next) {
         let info = file_info(file.originalFilename);
         let specs = {
           label: null,
-          timestamp: null
+          timestamp: null,
+          anomaly: null
         };
         if (info.type == 'zip') {
           let uploadPath = file.path;
@@ -117,7 +118,6 @@ router.get('/label', function (req, res) {
   let start = parseInt(req.query.start);
   let end = parseInt(req.query.end);
   let num = parseInt(req.query.num);
-  let download = (req.query.download == "true");
   let mul_shift = 1;
   if (shift.indexOf('d') > 0) {
     shift.replace('d', '');
@@ -135,7 +135,7 @@ router.get('/label', function (req, res) {
     shift.replace('s', '');
     mul_shift = 1000;
   }
-  shift = parseInt(shift) * mul_shift / multiple;
+  shift = parseInt(shift) * mul_shift;
   (function (name, shift, start, end, num) {
     function judgeStep(unit, size, num, global) {
       let step = unit;
@@ -181,7 +181,7 @@ router.get('/label', function (req, res) {
         start -= shift;
       }
       db.getCollection(name).then(function(col) {
-        return col.getDocs(start, end, step, shift, data.global_min, download);
+        return col.getDocs(start, end, step, shift, data.global_min);
       }).then(function(labels) {
         data.global_max += shift;
         data.global_min += shift;

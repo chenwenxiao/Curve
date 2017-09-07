@@ -34,17 +34,14 @@
         this.global_min = global_min;
         this.window_max = window_max;
         this.window_min = window_min;
-        
+
         this.globalSize = this.global_max - this.global_min;
         this.windowSize = this.window_max - this.window_min;
-        if (this.globalSize > this.windowSize)
-          this.needBar = true
-        else
-          this.needBar = false
+        this.needBar = this.globalSize > this.windowSize;
 
-        var GlobalBar = this;
+        let GlobalBar = this;
 
-        var parallax = this.parallax = new window.Sly(this.globalSize - this.windowSize, {
+        let parallax = this.parallax = new window.Sly(this.globalSize, {
           horizontal: 1,
           activateMiddle: 1,
           smart: 1,
@@ -66,29 +63,23 @@
           dragSource: $('#slave')
         });
 
-        var render = function () {
+        let render = function () {
           console.log('render');
-          
-          this.window_min = GlobalBar.global_min + parallax.pos.cur;
-          this.window_max = GlobalBar.global_min + parallax.pos.cur + GlobalBar.windowSize;
-          GlobalBar.$emit('update', this.window_min, this.window_max);
+
+          GlobalBar.window_min = GlobalBar.global_min + parallax.pos.cur;
+          GlobalBar.window_max = GlobalBar.global_min + parallax.pos.cur + GlobalBar.windowSize;
+          GlobalBar.$emit('update', GlobalBar.window_min, GlobalBar.window_max);
         };
 
         // Bind events
-        parallax.on('load move', render);
-        parallax.on({
-          load: function () {
-          },
-          move: function () {
-          }
-        });
+        parallax.on('load moveEnd', render);
 
         // Initialize Sly instance
         parallax.init();
-        console.log($(".handle").width());
-        $('.handle').width(Math.round(this.windowSize * 100 / this.globalSize) + '%');
+        //console.log($(".handle").width());
+        $('.handle').width((this.windowSize * 100.0 / this.globalSize) + '%');
         console.log(Math.round(this.windowSize * 100 / this.globalSize) + '%');
-        console.log($(".handle").width());
+        //console.log($(".handle").width());
         GlobalBar.$emit('update', this.window_min, this.window_max);
       }
     }
@@ -100,7 +91,7 @@
 /* Scrollbar */
 .scrollbar {
 	margin: 0 0 1em 0;
-	height: 5px;
+	height: 7px;
 	background: #ccc;
 	line-height: 0;
 }

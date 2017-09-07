@@ -1,8 +1,8 @@
 const {app, BrowserWindow} = require('electron');
 
 fs = require('fs');
-config = require(__dirname + '/' + 'config.js');
-var path = require('path');
+const path = require('path');
+const url = require('url');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -11,20 +11,23 @@ let win;
 function createWindow () {
 
   // Instantiate Express App
-  app.server = require(__dirname + '/' + 'run.js')();
 
   // Create the browser window.
   win = new BrowserWindow({
-    icon: path.join(__dirname, 'public/ico/Curve.png')
+    icon: path.join(__dirname, 'Curve.png')
   });
   // win.maximize();
 
   // and load the index.html of the app.
-  win.loadURL('http://localhost:'+config.server.port);
+  win.loadURL(url.format({
+    pathname: path.join(__dirname, 'index.html'),
+    protocol: 'file:',
+    slashes: true
+  }))
 
 
   // Open the DevTools.
-  // win.openDevTools();
+  win.openDevTools();
 
   win.focus();
 

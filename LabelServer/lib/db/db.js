@@ -2,7 +2,7 @@ let Collection = require('./collection');
 
 /**
  * The abstract class `Db` is for hiding the operate of multiple databases' API,
- * i.e, mongodb, mysql or the binary sql for the release desktop version Mikuru.
+ * i.e, mongodb, mysql or the binary sql for the release desktop version Curve.
  * @abstract
  */
 class Db {

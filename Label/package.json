@@ -1,33 +1,46 @@
 {
-  "name": "element-starter",
-  "description": "A Vue.js project",
-  "author": "yi.shyang@ele.me",
-  "private": true,
+  "name": "Curve-frontend",
+  "version": "2.2.0",
+  "description": "A frontend project for Curve",
+  "private": false,
+  "main": "main",
+  "author": {
+    "name": "chenwenxiao",
+    "email": "chenwenxiao@live.cn"
+  },
   "scripts": {
     "dev": "cross-env NODE_ENV=development webpack-dev-server --inline --hot",
     "build": "cross-env NODE_ENV=production webpack --progress --hide-modules"
   },
   "dependencies": {
-    "chart.js": "^2.4.0",
-    "element-ui": "^1.0.0-rc.4",
-    "highcharts": "^5.0.2",
+    "chart.js": "2.4.0",
+    "element-ui": "1.0.0-rc.4",
+    "file-saver": "1.3.3",
+    "highcharts": "5.0.7",
+    "highcharts-multicolor-series": "^2.2.1",
     "snapsvg-cjs": "0.0.4",
-    "vue": "^2.0.1",
-    "vue-resource": "^1.0.3",
-    "vue-router": "^2.0.1"
+    "vue": "2.0.1",
+    "vue-bus": "0.3.0",
+    "vue-resource": "1.0.3",
+    "vue-router": "2.0.1"
   },
   "devDependencies": {
-    "babel-core": "^6.0.0",
-    "babel-loader": "^6.0.0",
-    "babel-preset-es2015": "^6.13.2",
-    "cross-env": "^1.0.6",
-    "css-loader": "^0.23.1",
-    "element-theme-default": "^1.0.3",
-    "file-loader": "^0.8.5",
-    "jquery": "^3.1.1",
-    "style-loader": "^0.13.1",
-    "vue-loader": "^9.5.1",
+    "babel-core": "6.0.0",
+    "babel-loader": "6.0.0",
+    "babel-preset-es2015": "6.13.2",
+    "cross-env": "1.0.6",
+    "css-loader": "0.23.1",
+    "element-theme-default": "1.0.3",
+    "file-loader": "0.8.5",
+    "jquery": "3.1.1",
+    "style-loader": "0.13.1",
+    "vue-loader": "9.5.1",
     "webpack": "2.1.0-beta.22",
     "webpack-dev-server": "2.1.0-beta.10"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "http://git.peidan.me/cwx17/Curve.git"
   }
 }
